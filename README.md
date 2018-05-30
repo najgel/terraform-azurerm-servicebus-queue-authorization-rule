@@ -1,82 +1,74 @@
-# terraform-azurerm-api-app
+# terraform-azurerm-servicebus-queue-authorization-rule
 
 TODO: insert build badge
 
-## Create an API App in Azure
+## Create an autorization rule for a azure service bus queue
 
-This terraform module deploys an API App in Azure.
+This terraform module creates a service bus queue authorization rule
 
 > 
 > ⚠️ **Note**
 >
-> This module uses the `azurerm_template_deployment` resource to deploy an API App which is not natively supported by Terraform.
+> This module uses the `azurerm_template_deployment` resource to deploy an service bus queue authorization rule which is not natively supported by Terraform.
 >
 
 ## Usage
 
 ```hcl
 
-module "app_service_plan" {
-  source                   = "github.com/innovationnorway/terraform-azurerm-app-service-plan"
-  app_service_plan_name    = "test-api-plan"
-  resource_group_name      = "test-api-rg"
-  location                 = "westeurope"
+resource "azurerm_servicebus_namespace" "servicebus" {
+  name                = "test-sbns"
+  location            = "westeurope"
+  resource_group_name = "test-api-rg"
+  sku                 = "standard"
 }
 
-module "api_app" {
+resource "azurerm_servicebus_queue" "queue" {
+  name                = "test-queue"
+  resource_group_name = "test-api-rg"
+  namespace_name      = "test-sbns"
+}
+
+
+module "queue_auth_policy" {
   source                   = "github.com/innovationnorway/terraform-azurerm-api-app"
-  api_app_name             = "test-api"
-  app_service_plan_id      = "${module.app_service_plan.app_service_plan_id}"
+  queue_list               = ["test-queue"]
   resource_group_name      = "test-api-rg"
+  sb_name                  = "test-sbns"
   location                 = "westeurope"
+  rule_name                = "ListenPolicy"
+  claims                   = ["listen", "send", "manage"]
 }
 
 ```
 
 ## Inputs
 
-### api_app_name
+### queue_list
 
-Specifies the name of the API App.
+A list of the names of the queues on which you want to apply the policy
 
 ### resource_group_name
 
 The name of the resource group in which to create the API App.
 
+### sb_name
+
+The service bus namespace name where the queues resides.
+
 ### location
 
 Specifies the supported Azure location where the resource exists.
 
-### app_service_plan_id
+### rule_name
 
-The ID of the App Service Plan within which to create this API App.
+The name of the policy you want to create.
 
-### api_definition_url
+### claims
 
-The URL of the API definition.
+A list of the claims you want to associate with this rule, valid claims are "listen, "send" and "manage", for more information see https://docs.microsoft.com/en-us/azure/service-bus-messaging/service-bus-sas#rights-required-for-service-bus-operations
 
-### cors_allowed_origins
 
-Gets or sets the list of origins that should be allowed to make cross-origincalls (for example: http://example.com:12345). Use `*` to allow all.
-
-### MSI
-
-If set to 'yes' MSI is enabled on the API app.
-
-### tags
-
-A mapping of tags to assign to the resource.
 
 ## Outputs
 
-### api_app_id
-
-The API App ID.
-
-### api_app_name
-
-The API App name.
-
-### default_site_hostname
-
-The default hostname associated with the API App, such as `mysite.azurewebsites.net`.
