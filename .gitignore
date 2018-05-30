@@ -1,0 +1,34 @@
+# .tfvars files
+*.tfvars
+
+# .tfstate files
+*.tfstate
+*.tfstate.*
+
+# Local .terraform directory
+**/.terraform/*
+
+# Exclude test files
+!testing.tfvars
+!terraform.tfvars
+
+# IDE config files
+**/.vscode/*
+
+# Local test-kitchen files
+**/.kitchen/*
+
+# Ruby downloaded package lock file
+Gemfile.lock
+
+# MacOS files
+.DS_Store
+
+# .backup files
+*.backup
+
+# .bak files
+*.bak
+
+# .log files
+*.log
